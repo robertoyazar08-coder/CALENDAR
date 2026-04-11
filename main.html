@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 Calendar</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body { 
+      background: linear-gradient(135deg,#020617,#0f172a,#020617);
+      color:white; 
+      height:100vh;
+    }
+
+    h1 {
+      text-align:center;
+      margin-bottom:20px;
+    }
+
+    .back-btn{
+      position:absolute;
+      top:20px;
+      left:20px;
+      padding:8px 15px;
+      background:#38bdf8;
+      color:black;
+      border-radius:8px;
+      text-decoration:none;
+    }
+
+    .wrapper{
+      display:flex;
+      flex-direction:row;
+      gap:20px;
+      align-items:stretch;
+      height:85vh;
+    }
+
+    .sidebar{
+      width:160px;
+      overflow-y:auto;
+    }
+
+    .month-btn{
+      width:100%;
+      margin-bottom:8px;
+      transition:0.3s;
+      font-size:14px;
+    }
+
+    .month-btn:hover{
+      transform:scale(1.05);
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border-radius:15px;
+      padding:15px;
+      box-shadow:0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .table-container{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+
+    table { 
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      color:white;
+      border-radius:10px;
+      overflow:hidden;
+      width:100%;
+      height:100%;
+      table-layout:fixed;
+      flex:1;
+    }
+
+    th { background:rgba(255, 255, 255, 0.5) !important; }
+
+    th, td {
+      text-align:center;
+      padding:0;
+    }
+
+    td {
+      cursor:pointer;
+      transition:0.2s;
+      position:relative;
+      height:80px;
+      vertical-align:middle;
+      font-size:20px;
+    }
+
+    td:hover{
+      background:rgba(56,189,248,0.7);
+      transform:scale(1.05);
+    }
+
+    .today{ background:#facc15 !important; color:black; font-weight:bold; }
+
+    .holiday{
+      background:#ef4444 !important;
+      color:white;
+      font-weight:bold;
+    }
+
+    .holiday:hover::after{
+      content: attr(data-event);
+      position:absolute;
+      bottom:110%;
+      left:50%;
+      transform:translateX(-50%);
+      background:#000;
+      color:#fff;
+      padding:5px 8px;
+      border-radius:6px;
+      font-size:10px;
+    }
+
+    @media(max-width:768px){
+      .wrapper{
+        flex-direction:column;
+        height:auto;
+      }
+      .sidebar{
+        width:100%;
+      }
+      td{
+        height:60px;
+        font-size:16px;
+      }
+    }
+  </style>
+</head>
+<body class="container py-3">
+
+  <a href="index.html" class="back-btn">⬅ Back</a>
+
+  <h1>📅 2026 Calendar</h1>
+
+  <div class="wrapper">
+    <div class="sidebar glass" id="monthButtons"></div>
+    <div class="glass table-container" id="calendar"></div>
+  </div>
+
+  <script>
+    const months = [
+      "January","February","March","April","May","June",
+      "July","August","September","October","November","December"
+    ];
+
+    const today = new Date();
+
+    const holidays = {
+      "1-1":"New Year's Day",
+      "2-17":"Chinese New Year",
+      "4-2":"Maundy Thursday",
+      "4-3":"Good Friday",
+      "4-4":"Black Saturday",
+      "4-9":"Araw ng Kagitingan",
+      "5-1":"Labor Day",
+      "6-12":"Independence Day",
+      "8-21":"Ninoy Aquino Day",
+      "8-31":"National Heroes Day",
+      "11-1":"All Saints' Day",
+      "11-2":"All Souls' Day",
+      "11-30":"Bonifacio Day",
+      "12-8":"Feast of the Immaculate Conception",
+      "12-24":"Christmas Eve",
+      "12-25":"Christmas Day",
+      "12-30":"Rizal Day",
+      "12-31":"Last Day of the Year"
+    };
+
+    function createMonthButtons(){
+      let container = document.getElementById("monthButtons");
+      months.forEach((month, index)=>{
+        container.innerHTML += `
+          <button class="btn btn-info month-btn" onclick="showMonth(${index})">
+            ${month}
+          </button>
+        `;
+      });
+    }
+
+    function showMonth(index){
+      let container = document.getElementById("calendar");
+      container.innerHTML = "";
+
+      let year = 2026;
+      let firstDay = new Date(year, index, 1).getDay();
+      let daysInMonth = new Date(year, index + 1, 0).getDate();
+
+      let table = `
+        <h2 class="text-center mb-2">${months[index]} ${year}</h2>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Sun</th><th>Mon</th><th>Tue</th>
+              <th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+            </tr>
+          </thead>
+          <tbody><tr>
+      `;
+
+      for (let i = 0; i < firstDay; i++) {
+        table += "<td></td>";
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        if ((firstDay + day - 1) % 7 === 0 && day !== 1) {
+          table += "</tr><tr>";
+        }
+
+        let key = (index+1) + "-" + day;
+        let isToday = day === today.getDate() && index === today.getMonth();
+        let isHoliday = holidays[key];
+
+        table += `<td 
+          class="${isToday ? 'today' : ''} ${isHoliday ? 'holiday' : ''}"
+          ${isHoliday ? `data-event="${holidays[key]}"` : ''}
+        >
+          ${day}
+        </td>`;
+      }
+
+      table += "</tr></tbody></table>";
+      container.innerHTML = table;
+    }
+
+    createMonthButtons();
+    showMonth(0);
+  </script>
+
+</body>
+</html>
